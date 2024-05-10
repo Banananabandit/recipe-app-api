@@ -1,13 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const { validate, Recipe } = require('../models/recipe');
+const { Ingredient } = require('../models/ingredients');
 
 router.post('/', async (req, res) => {
     const result = validate(req.body);
     if (result.error) return res.result(400).send(result.error.details[0].message);
+
+    const ingredient = await Ingredient.findById(req.body.ingredients);
+    console.log(ingredient);
+    if (!ingredient) return res.status(400).send('Invalid ingredient');
+
     let recipe = new Recipe({
         name: req.body.name,
-        description: req.body.description
+        description: req.body.description,
+        ingredients: {
+            _id: ingredient._id,
+            name: ingredient.ingredients  // maybe here I will have a problem 
+        }
     });
 
     recipe = await recipe.save();
